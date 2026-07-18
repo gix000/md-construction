@@ -1,16 +1,13 @@
 M.D CONSTRUCTION — WEBSITE FILES
 ==================================
+index.html         → md-construction.org
+admin/index.html   → md-construction.org/admin
 
-UPLOAD BOTH TO YOUR GITHUB REPO:
-  index.html          your website (md-construction.org)
-  admin/
-    index.html        your admin (md-construction.org/admin)
+Password: MDadmin2024
 
-FIRST TIME SETUP:
-1. Upload both to GitHub
-2. Visit md-construction.org/admin
-3. Password: MDadmin2024
-4. Go to GitHub Setup tab
-5. Enter username, repo name, Personal Access Token
-6. Save & Test Connection
-7. Done - Publish Live works instantly!
+WHAT'S NEW IN ADMIN:
+- Photos: each photo has Title + Subtitle (EN + AR)
+- Videos: each video has Title + Subtitle (EN + AR)
+- Section headers: custom title/subtitle for gallery and video sections
+- Reorder photos/videos with Up/Down buttons
+- Upload MP4 directly or paste YouTube links

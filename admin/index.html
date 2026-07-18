@@ -105,6 +105,21 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--ink);min-
 .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .stat-box{border:1.5px solid var(--line);border-radius:8px;padding:12px;background:var(--bg)}
 
+/* ── Media item cards (photo + video) ── */
+.mcard{border:1.5px solid var(--line);border-radius:10px;overflow:hidden;background:var(--white);margin-bottom:14px;display:grid;grid-template-columns:200px 1fr;align-items:stretch}
+.mcard-preview{position:relative;background:#0a1830;min-height:130px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mcard-preview img{width:200px;height:130px;object-fit:cover;display:block}
+.mcard-preview video{width:200px;height:130px;object-fit:cover;display:block}
+.mcard-preview .yt-thumb{width:200px;height:130px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:rgba(255,255,255,.7);font-size:.75rem;font-weight:600}
+.mcard-preview .drag-handle{position:absolute;top:6px;left:6px;background:rgba(0,0,0,.5);color:#fff;border-radius:5px;padding:3px 6px;font-size:.7rem;cursor:grab}
+.mcard-body{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.mcard-body .f{margin-bottom:0}
+.mcard-footer{display:flex;justify-content:flex-end;gap:6px;margin-top:auto;padding-top:8px;border-top:1px solid var(--line)}
+@media(max-width:600px){
+  .mcard{grid-template-columns:1fr}
+  .mcard-preview img,.mcard-preview video,.mcard-preview .yt-thumb{width:100%;height:160px}
+}
+
 /* ── Services ── */
 .svc-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .svc-box{border:1.5px solid var(--line);border-radius:9px;padding:14px;background:var(--bg)}
@@ -320,26 +335,72 @@ body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--ink);min-
       <!-- PHOTOS -->
       <div id="pg-photos" class="page">
         <div class="pg-title">Project Photos</div>
-        <div class="pg-sub">Photos appear in a gallery section on the website.</div>
+        <div class="pg-sub">Each photo can have a title and subtitle shown on the website gallery.</div>
+
+        <!-- Section header fields -->
         <div class="card">
-          <div class="mgrid" id="photo-grid"></div>
+          <div class="card-title">Gallery Section Header</div>
+          <div class="f"><label>Section Title (English)</label><input id="gal-title-en" type="text" placeholder="Our Work"></div>
+          <div class="f"><label>Section Subtitle (English)</label><input id="gal-sub-en" type="text" placeholder="A selection of our completed projects."></div>
+          <div class="f rtl"><label>Section Title (Arabic)</label><input id="gal-title-ar" type="text"></div>
+          <div class="f rtl"><label>Section Subtitle (Arabic)</label><input id="gal-sub-ar" type="text"></div>
         </div>
+
+        <!-- Add photo button -->
+        <div class="card">
+          <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
+            <span>Photos <span id="photo-count" style="color:var(--muted);font-weight:400;font-size:.85rem"></span></span>
+            <label class="btn btn-navy btn-sm" for="photo-inp" style="cursor:pointer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+              Add Photos
+            </label>
+          </div>
+          <input type="file" id="photo-inp" accept="image/*" multiple style="display:none" onchange="addPhotos(this)">
+          <div id="photo-list" style="margin-top:8px"></div>
+        </div>
+
         <button class="btn btn-gold" onclick="save('photos')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
-          Save Changes
+          Save &amp; Publish
         </button>
       </div>
 
       <!-- VIDEOS -->
       <div id="pg-videos" class="page">
         <div class="pg-title">Project Videos</div>
-        <div class="pg-sub">Upload MP4 videos or paste YouTube links.</div>
+        <div class="pg-sub">Upload MP4 videos or paste YouTube links. Each video can have a title and subtitle.</div>
+
+        <!-- Section header fields -->
         <div class="card">
-          <div class="mgrid" id="video-grid"></div>
+          <div class="card-title">Videos Section Header</div>
+          <div class="f"><label>Section Title (English)</label><input id="vid-title-en" type="text" placeholder="Watch Our Work"></div>
+          <div class="f"><label>Section Subtitle (English)</label><input id="vid-sub-en" type="text" placeholder="See our projects in action."></div>
+          <div class="f rtl"><label>Section Title (Arabic)</label><input id="vid-title-ar" type="text"></div>
+          <div class="f rtl"><label>Section Subtitle (Arabic)</label><input id="vid-sub-ar" type="text"></div>
         </div>
+
+        <!-- Add video buttons -->
+        <div class="card">
+          <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
+            <span>Videos <span id="video-count" style="color:var(--muted);font-weight:400;font-size:.85rem"></span></span>
+            <div style="display:flex;gap:8px">
+              <label class="btn btn-navy btn-sm" for="video-inp" style="cursor:pointer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                Upload MP4
+              </label>
+              <button class="btn btn-ghost btn-sm" onclick="addYT()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/></svg>
+                YouTube Link
+              </button>
+            </div>
+          </div>
+          <input type="file" id="video-inp" accept="video/mp4,video/*" multiple style="display:none" onchange="addVideos(this)">
+          <div id="video-list" style="margin-top:8px"></div>
+        </div>
+
         <button class="btn btn-gold" onclick="save('videos')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
-          Save Changes
+          Save &amp; Publish
         </button>
       </div>
 
@@ -595,7 +656,20 @@ function save(section){
     D.contact.phone=getVal('c-ph');D.contact.whatsapp=getVal('c-wa');
     D.contact.email=getVal('c-em');D.contact.location=getVal('c-loc');D.contact.maps=getVal('c-map');
   }
-  // photos and videos already live in D
+  // photos — save section header
+  if(section==='photos'){
+    D.gallery_section={
+      title_en:getVal('gal-title-en'), subtitle_en:getVal('gal-sub-en'),
+      title_ar:getVal('gal-title-ar'),  subtitle_ar:getVal('gal-sub-ar')
+    };
+  }
+  // videos — save section header
+  if(section==='videos'){
+    D.videos_section={
+      title_en:getVal('vid-title-en'), subtitle_en:getVal('vid-sub-en'),
+      title_ar:getVal('vid-title-ar'),  subtitle_ar:getVal('vid-sub-ar')
+    };
+  }
   toast('Saved! Click "Publish Live" to go live.');
 }
 
@@ -664,80 +738,159 @@ function removeBrand(i){
 }
 
 // ════════════════════════════════════
-// PHOTOS
+// PHOTOS — objects with {img, title, subtitle, title_ar, subtitle_ar}
 // ════════════════════════════════════
-function renderPhotos(){
-  const g=document.getElementById('photo-grid');if(!g||!D)return;
-  g.innerHTML=(D.gallery||[]).map((uri,i)=>`
-    <div class="mitem">
-      <img src="${uri}" alt="Photo ${i+1}">
-      <div class="mov">
-        <button class="btn btn-danger btn-sm" onclick="removePhoto(${i})">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
-          Remove
-        </button>
-      </div>
-    </div>`).join('')+`
-  <label class="madd" for="photo-inp">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-    <span>Add Photos</span>
-  </label>
-  <input type="file" id="photo-inp" accept="image/*" multiple style="display:none" onchange="addPhotos(this)">`;
+function migrateGallery(){
+  // upgrade old string-only format to objects
+  D.gallery=(D.gallery||[]).map(item=>
+    typeof item==='string' ? {img:item,title:'',subtitle:'',title_ar:'',subtitle_ar:''} : item
+  );
 }
+
+function populateGalleryHeader(){
+  const gs=D.gallery_section||{};
+  setVal('gal-title-en', gs.title_en||'Our Work');
+  setVal('gal-sub-en',   gs.subtitle_en||'A selection of our completed projects.');
+  setVal('gal-title-ar', gs.title_ar||'أعمالنا');
+  setVal('gal-sub-ar',   gs.subtitle_ar||'مجموعة من مشاريعنا المنجزة.');
+}
+
+function renderPhotos(){
+  migrateGallery();
+  populateGalleryHeader();
+  const list=document.getElementById('photo-list');
+  const count=document.getElementById('photo-count');
+  if(!list||!D)return;
+  count.textContent=D.gallery.length ? `(${D.gallery.length} photo${D.gallery.length!==1?'s':''})` : '';
+  list.innerHTML=D.gallery.map((p,i)=>`
+    <div class="mcard" id="ph-card-${i}">
+      <div class="mcard-preview">
+        <span class="drag-handle" title="Order: ${i+1}">#${i+1}</span>
+        <img src="${p.img}" alt="Photo ${i+1}">
+      </div>
+      <div class="mcard-body">
+        <div class="f"><label>Title (English)</label><input type="text" value="${(p.title||'').replace(/"/g,'&quot;')}" oninput="D.gallery[${i}].title=this.value" placeholder="e.g. Living Room Renovation"></div>
+        <div class="f"><label>Subtitle (English)</label><input type="text" value="${(p.subtitle||'').replace(/"/g,'&quot;')}" oninput="D.gallery[${i}].subtitle=this.value" placeholder="e.g. Roumieh, 2024"></div>
+        <div class="f rtl"><label>Title (Arabic)</label><input type="text" value="${(p.title_ar||'').replace(/"/g,'&quot;')}" oninput="D.gallery[${i}].title_ar=this.value" placeholder="تجديد غرفة المعيشة"></div>
+        <div class="f rtl"><label>Subtitle (Arabic)</label><input type="text" value="${(p.subtitle_ar||'').replace(/"/g,'&quot;')}" oninput="D.gallery[${i}].subtitle_ar=this.value" placeholder="روميه، 2024"></div>
+        <div class="mcard-footer">
+          ${i>0?`<button class="btn btn-ghost btn-sm" onclick="movePhoto(${i},-1)">↑ Up</button>`:''}
+          ${i<D.gallery.length-1?`<button class="btn btn-ghost btn-sm" onclick="movePhoto(${i},1)">↓ Down</button>`:''}
+          <button class="btn btn-danger btn-sm" onclick="removePhoto(${i})">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+            Remove
+          </button>
+        </div>
+      </div>
+    </div>`).join('');
+  if(!D.gallery.length){
+    list.innerHTML='<p style="color:var(--muted);font-size:.88rem;padding:12px 0">No photos yet — click Add Photos above.</p>';
+  }
+}
+
 function addPhotos(inp){
+  migrateGallery();
   const files=Array.from(inp.files);let done=0;
   files.forEach(f=>{
     const r=new FileReader();
-    r.onload=e=>{D.gallery=D.gallery||[];D.gallery.push(e.target.result);done++;if(done===files.length)renderPhotos();};
+    r.onload=e=>{
+      D.gallery.push({img:e.target.result,title:'',subtitle:'',title_ar:'',subtitle_ar:''});
+      done++;if(done===files.length)renderPhotos();
+    };
     r.readAsDataURL(f);
   });
   inp.value='';
 }
 function removePhoto(i){D.gallery.splice(i,1);renderPhotos();}
+function movePhoto(i,dir){
+  const arr=D.gallery;const ni=i+dir;
+  if(ni<0||ni>=arr.length)return;
+  [arr[i],arr[ni]]=[arr[ni],arr[i]];renderPhotos();
+}
 
 // ════════════════════════════════════
-// VIDEOS
+// VIDEOS — objects with {src, title, subtitle, title_ar, subtitle_ar}
 // ════════════════════════════════════
-function renderVideos(){
-  const g=document.getElementById('video-grid');if(!g||!D)return;
-  const vids=D.videos||[];
-  g.innerHTML=vids.map((v,i)=>`
-    <div class="mitem">
-      ${v.startsWith('data:video')
-        ? `<video src="${v}" style="width:100%;height:100%;object-fit:cover"></video>`
-        : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#0a1830;color:#fff;flex-direction:column;gap:6px;font-size:.75rem"><svg viewBox="0 0 24 24" fill="#f4a91f" width="28" height="28"><polygon points="5 3 19 12 5 21 5 3"/></svg>YouTube</div>`
-      }
-      <div class="mov">
-        <button class="btn btn-danger btn-sm" onclick="removeVideo(${i})">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
-          Remove
-        </button>
-      </div>
-    </div>`).join('')+`
-  <label class="madd" for="video-inp">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-    <span>Upload MP4</span>
-  </label>
-  <input type="file" id="video-inp" accept="video/mp4,video/*" multiple style="display:none" onchange="addVideos(this)">
-  <div class="madd" onclick="addYT()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/></svg>
-    <span>YouTube Link</span>
-  </div>`;
+function migrateVideos(){
+  D.videos=(D.videos||[]).map(item=>
+    typeof item==='string' ? {src:item,title:'',subtitle:'',title_ar:'',subtitle_ar:''} : item
+  );
 }
+
+function populateVideoHeader(){
+  const vs=D.videos_section||{};
+  setVal('vid-title-en', vs.title_en||'Watch Our Work');
+  setVal('vid-sub-en',   vs.subtitle_en||'See our projects in action.');
+  setVal('vid-title-ar', vs.title_ar||'شاهد أعمالنا');
+  setVal('vid-sub-ar',   vs.subtitle_ar||'تابع مشاريعنا على أرض الواقع.');
+}
+
+function renderVideos(){
+  migrateVideos();
+  populateVideoHeader();
+  const list=document.getElementById('video-list');
+  const count=document.getElementById('video-count');
+  if(!list||!D)return;
+  count.textContent=D.videos.length ? `(${D.videos.length} video${D.videos.length!==1?'s':''})` : '';
+  list.innerHTML=D.videos.map((v,i)=>{
+    const isFile=v.src&&v.src.startsWith('data:video');
+    const preview=isFile
+      ? `<video src="${v.src}" style="width:200px;height:130px;object-fit:cover;display:block"></video>`
+      : `<div class="yt-thumb"><svg viewBox="0 0 24 24" fill="#f4a91f" width="32" height="32"><polygon points="5 3 19 12 5 21 5 3"/></svg><span>YouTube</span><span style="font-size:.65rem;opacity:.6;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(v.src||'').replace('https://','')}</span></div>`;
+    return `
+    <div class="mcard" id="vid-card-${i}">
+      <div class="mcard-preview">
+        <span class="drag-handle" title="Order: ${i+1}">#${i+1}</span>
+        ${preview}
+      </div>
+      <div class="mcard-body">
+        <div class="f"><label>Title (English)</label><input type="text" value="${(v.title||'').replace(/"/g,'&quot;')}" oninput="D.videos[${i}].title=this.value" placeholder="e.g. Waterproofing Project — Metn"></div>
+        <div class="f"><label>Subtitle (English)</label><input type="text" value="${(v.subtitle||'').replace(/"/g,'&quot;')}" oninput="D.videos[${i}].subtitle=this.value" placeholder="e.g. Completed in 3 days"></div>
+        <div class="f rtl"><label>Title (Arabic)</label><input type="text" value="${(v.title_ar||'').replace(/"/g,'&quot;')}" oninput="D.videos[${i}].title_ar=this.value" placeholder="مشروع العزل المائي"></div>
+        <div class="f rtl"><label>Subtitle (Arabic)</label><input type="text" value="${(v.subtitle_ar||'').replace(/"/g,'&quot;')}" oninput="D.videos[${i}].subtitle_ar=this.value" placeholder="أُنجز في 3 أيام"></div>
+        <div class="mcard-footer">
+          ${i>0?`<button class="btn btn-ghost btn-sm" onclick="moveVideo(${i},-1)">↑ Up</button>`:''}
+          ${i<D.videos.length-1?`<button class="btn btn-ghost btn-sm" onclick="moveVideo(${i},1)">↓ Down</button>`:''}
+          <button class="btn btn-danger btn-sm" onclick="removeVideo(${i})">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+            Remove
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  if(!D.videos.length){
+    list.innerHTML='<p style="color:var(--muted);font-size:.88rem;padding:12px 0">No videos yet — upload an MP4 or add a YouTube link above.</p>';
+  }
+}
+
 function addVideos(inp){
+  migrateVideos();
   const files=Array.from(inp.files);let done=0;
   files.forEach(f=>{
     const r=new FileReader();
-    r.onload=e=>{D.videos=D.videos||[];D.videos.push(e.target.result);done++;if(done===files.length)renderVideos();};
+    r.onload=e=>{
+      D.videos.push({src:e.target.result,title:'',subtitle:'',title_ar:'',subtitle_ar:''});
+      done++;if(done===files.length)renderVideos();
+    };
     r.readAsDataURL(f);
   });
   inp.value='';
 }
 function addYT(){
   const url=prompt('Paste YouTube link:');
-  if(url&&url.includes('youtu')){D.videos=D.videos||[];D.videos.push(url.trim());renderVideos();}
+  if(url&&url.includes('youtu')){
+    migrateVideos();
+    D.videos.push({src:url.trim(),title:'',subtitle:'',title_ar:'',subtitle_ar:''});
+    renderVideos();
+  }
 }
 function removeVideo(i){D.videos.splice(i,1);renderVideos();}
+function moveVideo(i,dir){
+  const arr=D.videos;const ni=i+dir;
+  if(ni<0||ni>=arr.length)return;
+  [arr[i],arr[ni]]=[arr[ni],arr[i]];renderVideos();
+}
 
 // ════════════════════════════════════
 // PUBLISH — update index.html on GitHub
