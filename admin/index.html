@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>M.D Construction — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0a1830;--navy2:#0e2148;
+  --gold:#f4a91f;--green:#5aa730;--blue:#3b86e0;--yellow:#f4c12e;--orange:#e8682a;
+  --bg:#f0f2f6;--white:#fff;--ink:#0c1730;--muted:#5a6781;--line:#e0e4ed;
+  --danger:#e53535;--success:#27ae60;
+}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+
+/* ── Login ── */
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.login-card{background:var(--white);border:1px solid var(--line);border-radius:16px;padding:40px;width:100%;max-width:380px;text-align:center;box-shadow:0 20px 60px -20px rgba(10,24,48,.15)}
+.login-card .lock{font-size:2.4rem;margin-bottom:12px}
+.login-card h2{font-size:1.3rem;font-weight:700;color:var(--navy);margin-bottom:6px}
+.login-card p{font-size:.88rem;color:var(--muted);margin-bottom:24px}
+.login-card input{width:100%;padding:11px 14px;border:1.5px solid var(--line);border-radius:9px;font-size:1rem;margin-bottom:12px;text-align:center;letter-spacing:.2em;font-family:inherit}
+.login-card input:focus{outline:none;border-color:var(--blue)}
+.login-err{font-size:.8rem;color:var(--danger);margin-top:8px;min-height:20px}
+
+/* ── Shell ── */
+#shell{display:none;flex-direction:column;min-height:100vh}
+#shell.show{display:flex}
+
+/* ── Header ── */
+.hdr{background:var(--navy);color:#fff;padding:0 24px;display:flex;align-items:center;gap:14px;height:56px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.3);flex-shrink:0}
+.hdr-logo{width:30px;height:30px;background:var(--gold);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hdr h1{font-size:1rem;font-weight:700;letter-spacing:.04em;flex:1}
+.hdr h1 span{opacity:.4;font-weight:400}
+.badge{background:var(--gold);color:var(--navy);font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.08em}
+.pub-area{display:flex;align-items:center;gap:8px;margin-left:10px}
+.spin{display:none;animation:spin .8s linear infinite;width:16px;height:16px;flex-shrink:0}
+.spin.show{display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pub-status{font-size:.75rem;color:rgba(255,255,255,.5);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── Layout ── */
+.layout{display:grid;grid-template-columns:200px 1fr;flex:1}
+
+/* ── Sidebar ── */
+.sidebar{background:var(--white);border-right:1px solid var(--line);padding:14px 0;overflow-y:auto}
+.nav-sec{padding:8px 14px 4px;font-size:.62rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.nav-link{display:flex;align-items:center;gap:9px;padding:9px 18px;font-size:.85rem;color:var(--ink);cursor:pointer;border-left:3px solid transparent;transition:.15s;user-select:none}
+.nav-link:hover{background:var(--bg);color:var(--navy)}
+.nav-link.on{background:#eef3ff;border-left-color:var(--blue);color:var(--blue);font-weight:600}
+.nav-link svg{width:15px;height:15px;flex-shrink:0;opacity:.7}
+.nav-link.on svg{opacity:1}
+
+/* ── Main ── */
+.main{padding:24px 28px;overflow-y:auto}
+.page{display:none}.page.on{display:block}
+.pg-title{font-size:1.3rem;font-weight:700;color:var(--navy);margin-bottom:4px}
+.pg-sub{font-size:.85rem;color:var(--muted);margin-bottom:20px}
+
+/* ── Cards ── */
+.card{background:var(--white);border:1px solid var(--line);border-radius:10px;padding:20px;margin-bottom:16px}
+.card-title{font-size:.93rem;font-weight:700;color:var(--navy);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+
+/* ── Fields ── */
+.f{margin-bottom:14px}
+.f label{display:block;font-size:.75rem;font-weight:600;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.07em}
+.f input,.f textarea,.f select{width:100%;padding:9px 12px;border:1.5px solid var(--line);border-radius:7px;font-size:.9rem;color:var(--ink);background:var(--white);transition:.15s;font-family:inherit}
+.f input:focus,.f textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,134,224,.1)}
+.f textarea{resize:vertical;min-height:80px;line-height:1.55}
+.f.rtl textarea,.f.rtl input{direction:rtl;text-align:right;font-family:"Tajawal",system-ui,sans-serif;font-size:1rem}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:7px;font-size:.82rem;font-weight:600;cursor:pointer;border:none;transition:.2s;text-transform:uppercase;letter-spacing:.07em;white-space:nowrap}
+.btn-gold{background:var(--gold);color:var(--navy)}.btn-gold:hover{background:#ffba30}
+.btn-navy{background:var(--navy);color:#fff}.btn-navy:hover{background:var(--navy2)}
+.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{opacity:.85}
+.btn-ghost{background:transparent;border:1.5px solid var(--line);color:var(--muted)}.btn-ghost:hover{border-color:var(--navy);color:var(--navy)}
+.btn-pub{background:var(--gold);color:var(--navy);font-size:.8rem;padding:7px 14px}.btn-pub:hover{background:#ffba30}
+.btn-pub:disabled{opacity:.5;cursor:not-allowed}
+.btn-sm{padding:5px 10px;font-size:.76rem}
+.btn svg{width:14px;height:14px}
+
+/* ── Brand grid ── */
+.brand-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:8px}
+.bcard{border:1.5px solid var(--line);border-radius:9px;overflow:hidden;background:var(--white);position:relative}
+.bcard img{width:100%;height:70px;object-fit:contain;padding:8px;display:block}
+.bcard .bname{font-size:.72rem;font-weight:600;text-align:center;padding:5px;background:var(--bg);border-top:1px solid var(--line);color:var(--muted)}
+.bcard .bact{position:absolute;top:4px;right:4px;display:none;gap:3px}
+.bcard:hover .bact{display:flex}
+
+/* ── Media grid ── */
+.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:8px}
+.mitem{border:1.5px solid var(--line);border-radius:9px;overflow:hidden;background:var(--white);position:relative;aspect-ratio:16/9}
+.mitem img,.mitem video{width:100%;height:100%;object-fit:cover;display:block}
+.mov{position:absolute;inset:0;background:rgba(10,24,48,.55);display:none;align-items:center;justify-content:center;gap:6px}
+.mitem:hover .mov{display:flex}
+.madd{border:2px dashed var(--line);border-radius:9px;aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;color:var(--muted);transition:.2s}
+.madd:hover{border-color:var(--blue);color:var(--blue);background:#f0f5ff}
+.madd svg{width:22px;height:22px}
+.madd span{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em}
+
+/* ── Stats ── */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat-box{border:1.5px solid var(--line);border-radius:8px;padding:12px;background:var(--bg)}
+
+/* ── Services ── */
+.svc-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.svc-box{border:1.5px solid var(--line);border-radius:9px;padding:14px;background:var(--bg)}
+.svc-num{font-size:.62rem;font-weight:700;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
+.cbox{display:flex;gap:7px;margin-top:6px;flex-wrap:wrap}
+.cdot{width:18px;height:18px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;transition:.15s}
+.cdot.sel{border-color:var(--ink);transform:scale(1.25)}
+
+/* ── GitHub status ── */
+.gh-status{display:flex;align-items:center;gap:8px;font-size:.82rem;padding:10px 14px;border-radius:8px;margin-bottom:16px}
+.gh-status.ok{background:#d4edda;color:#155724}
+.gh-status.err{background:#f8d7da;color:#721c24}
+.gh-status.idle{background:var(--bg);color:var(--muted)}
+.gh-status svg{flex-shrink:0}
+
+/* ── Loading screen ── */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 56px);gap:12px;color:var(--muted);font-size:.9rem}
+.loading svg{animation:spin .8s linear infinite;width:32px;height:32px}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;right:24px;padding:11px 18px;border-radius:8px;font-size:.85rem;font-weight:600;box-shadow:0 8px 24px -6px rgba(0,0,0,.3);z-index:9999;display:none;align-items:center;gap:9px;animation:tslide .3s ease}
+.toast.show{display:flex}
+.toast.ok{background:var(--success);color:#fff}
+.toast.err{background:var(--danger);color:#fff}
+@keyframes tslide{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+@media(max-width:700px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .brand-grid{grid-template-columns:repeat(2,1fr)}
+  .mgrid{grid-template-columns:repeat(2,1fr)}
+  .svc-grid{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="login-wrap" class="login-wrap">
+  <div class="login-card">
+    <div class="lock">🔐</div>
+    <h2>M.D Construction</h2>
+    <p>Admin Panel — Content Editor</p>
+    <input type="password" id="pw" placeholder="Password" onkeydown="if(event.key==='Enter')login()">
+    <button class="btn btn-gold" style="width:100%;justify-content:center;padding:11px;margin-top:2px" onclick="login()">Enter Admin</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- ── SHELL (shown after login) ── -->
+<div id="shell">
+
+  <!-- Header -->
+  <div class="hdr">
+    <div class="hdr-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#0a1830" stroke-width="2.5" width="16" height="16"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>
+    </div>
+    <h1>M.D Construction <span>Admin</span></h1>
+    <span class="badge">Content Editor</span>
+    <div class="pub-area">
+      <svg class="spin" id="pub-spin" viewBox="0 0 24 24" fill="none" stroke="#f4a91f" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+      <span class="pub-status" id="pub-status"></span>
+      <button class="btn btn-pub" id="pub-btn" onclick="publish()" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Publish Live
+      </button>
+      <a href="/" class="btn btn-ghost btn-sm" target="_blank">View Site ↗</a>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div class="nav-sec">Content</div>
+      <div class="nav-link on" onclick="nav('hero',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Hero</div>
+      <div class="nav-link" onclick="nav('about',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>About</div>
+      <div class="nav-link" onclick="nav('services',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>Services</div>
+      <div class="nav-link" onclick="nav('quality',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5z"/></svg>Quality & Brands</div>
+      <div class="nav-link" onclick="nav('contact',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07"/></svg>Contact</div>
+      <div class="nav-sec">Media</div>
+      <div class="nav-link" onclick="nav('photos',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Photos</div>
+      <div class="nav-link" onclick="nav('videos',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>Videos</div>
+      <div class="nav-sec">System</div>
+      <div class="nav-link" onclick="nav('github',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>GitHub Setup</div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="main" id="main-content">
+      <div class="loading" id="loading-screen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+        <span>Loading site content from GitHub...</span>
+      </div>
+
+      <!-- HERO -->
+      <div id="pg-hero" class="page">
+        <div class="pg-title">Hero Section</div>
+        <div class="pg-sub">The main banner visitors see first.</div>
+        <div class="card">
+          <div class="card-title">Headline</div>
+          <div class="f"><label>Line 1</label><input id="h-h1a" type="text"></div>
+          <div class="f"><label>Line 2 (shown in gold)</label><input id="h-h1b" type="text"></div>
+          <div class="f"><label>Lead Paragraph</label><textarea id="h-lead" rows="3"></textarea></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Arabic Card</div>
+          <div class="f rtl"><label>Arabic Title</label><input id="h-arh3" type="text"></div>
+          <div class="f rtl"><label>Arabic Paragraph</label><textarea id="h-arp" rows="3"></textarea></div>
+          <div class="f rtl"><label>Arabic Guarantee Line</label><input id="h-arguar" type="text"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">WhatsApp Button</div>
+          <div class="f"><label>WhatsApp Number (digits only)</label><input id="h-wa" type="text" placeholder="9613881097"></div>
+        </div>
+        <button class="btn btn-gold" onclick="save('hero')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+          Save Changes
+        </button>
+      </div>
+
+      <!-- ABOUT -->
+      <div id="pg-about" class="page">
+        <div class="pg-title">About Section</div>
+        <div class="pg-sub">The "Who We Are" section.</div>
+        <div class="card">
+          <div class="card-title">English</div>
+          <div class="f"><label>Heading</label><input id="a-head" type="text"></div>
+          <div class="f"><label>Paragraph</label><textarea id="a-en" rows="5"></textarea></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Arabic</div>
+          <div class="f rtl"><label>Arabic Paragraph</label><textarea id="a-ar" rows="5"></textarea></div>
+          <div class="f rtl"><label>Arabic Guarantee</label><input id="a-arguar" type="text"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Stats Strip</div>
+          <div class="stats-row">
+            <div class="stat-box">
+              <div class="f"><label>Value</label><input id="s1v" type="text"></div>
+              <div class="f"><label>Label</label><input id="s1l" type="text"></div>
+            </div>
+            <div class="stat-box">
+              <div class="f"><label>Value</label><input id="s2v" type="text"></div>
+              <div class="f"><label>Label</label><input id="s2l" type="text"></div>
+            </div>
+            <div class="stat-box">
+              <div class="f"><label>Value</label><input id="s3v" type="text"></div>
+              <div class="f"><label>Label</label><input id="s3l" type="text"></div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-gold" onclick="save('about')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+          Save Changes
+        </button>
+      </div>
+
+      <!-- SERVICES -->
+      <div id="pg-services" class="page">
+        <div class="pg-title">Services</div>
+        <div class="pg-sub">The 6 service cards on the website.</div>
+        <div id="svc-grid" class="svc-grid"></div>
+        <button class="btn btn-gold" style="margin-top:14px" onclick="save('services')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+          Save Changes
+        </button>
+      </div>
+
+      <!-- QUALITY -->
+      <div id="pg-quality" class="page">
+        <div class="pg-title">Quality & Brand Partners</div>
+        <div class="pg-sub">Quality section text and trusted brand logos.</div>
+        <div class="card">
+          <div class="card-title">Quality Text</div>
+          <div class="f"><label>English</label><textarea id="q-en" rows="3"></textarea></div>
+          <div class="f rtl"><label>Arabic</label><textarea id="q-ar" rows="3"></textarea></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Brand Logos</div>
+          <div class="brand-grid" id="brand-grid"></div>
+          <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
+            <label class="btn btn-ghost btn-sm" for="brand-inp">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+              Add Brand Logo
+            </label>
+            <input type="file" id="brand-inp" accept="image/*" style="display:none" onchange="addBrand(this)">
+            <span style="font-size:.75rem;color:var(--muted)">PNG or JPG recommended</span>
+          </div>
+        </div>
+        <button class="btn btn-gold" onclick="save('quality')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+          Save Changes
+        </button>
+      </div>
+
+      <!-- CONTACT -->
+      <div id="pg-contact" class="page">
+        <div class="pg-title">Contact Information</div>
+        <div class="pg-sub">Phone, email, and location details.</div>
+        <div class="card">
+          <div class="f"><label>Display Phone</label><input id="c-ph" type="text" placeholder="+961 3 881 097"></div>
+          <div class="f"><label>WhatsApp Number (digits only)</label><input id="c-wa" type="text" placeholder="9613881097"></div>
+          <div class="f"><label>Email</label><input id="c-em" type="email"></div>
+          <div class="f"><label>Location (displayed)</label><input id="c-loc" type="text"></div>
+          <div class="f"><label>Google Maps Query</label><input id="c-map" type="text" placeholder="Roumieh+Al+Matn+Lebanon"></div>
+        </div>
+        <button class="btn btn-gold" onclick="save('contact')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+          Save Changes
+        </button>
+      </div>
+
+      <!-- PHOTOS -->
+      <div id="pg-photos" class="page">
+        <div class="pg-title">Project Photos</div>
+        <div class="pg-sub">Photos appear in a gallery section on the website.</div>
+        <div class="card">
+          <div class="mgrid" id="photo-grid"></div>
+        </div>
+        <button class="btn btn-gold" onclick="save('photos')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+          Save Changes
+        </button>
+      </div>
+
+      <!-- VIDEOS -->
+      <div id="pg-videos" class="page">
+        <div class="pg-title">Project Videos</div>
+        <div class="pg-sub">Upload MP4 videos or paste YouTube links.</div>
+        <div class="card">
+          <div class="mgrid" id="video-grid"></div>
+        </div>
+        <button class="btn btn-gold" onclick="save('videos')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+          Save Changes
+        </button>
+      </div>
+
+      <!-- GITHUB -->
+      <div id="pg-github" class="page">
+        <div class="pg-title">GitHub Setup</div>
+        <div class="pg-sub">Connect once — then "Publish Live" updates your site instantly.</div>
+        <div class="card">
+          <div class="card-title">Connection</div>
+          <div id="gh-bar" class="gh-status idle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Not connected yet
+          </div>
+          <div class="f"><label>GitHub Username</label><input id="gh-user" type="text" placeholder="e.g. maroundaaboul"></div>
+          <div class="f"><label>Repository Name</label><input id="gh-repo" type="text" placeholder="e.g. md-construction"></div>
+          <div class="f"><label>Branch</label><input id="gh-branch" type="text" value="main"></div>
+          <div class="f">
+            <label>Personal Access Token <small style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted)">(needs "repo" scope)</small></label>
+            <input id="gh-tok" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+          </div>
+          <button class="btn btn-navy" onclick="ghConnect()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+            Save & Test Connection
+          </button>
+        </div>
+        <div class="card">
+          <div class="card-title">How to get a Personal Access Token</div>
+          <ol style="margin-left:18px;line-height:2.2;font-size:.88rem;color:var(--muted)">
+            <li>Go to <strong>github.com</strong> → your profile photo → <strong>Settings</strong></li>
+            <li>Scroll to the bottom → <strong>Developer settings</strong></li>
+            <li><strong>Personal access tokens → Tokens (classic)</strong></li>
+            <li><strong>Generate new token (classic)</strong></li>
+            <li>Set a name, expiry, and tick the <strong>repo</strong> checkbox</li>
+            <li>Copy and paste the token above</li>
+          </ol>
+          <p style="font-size:.78rem;color:var(--muted);margin-top:10px">⚠️ Token is saved in your browser only — never sent anywhere except GitHub.</p>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+// ════════════════════════════════════
+// STATE
+// ════════════════════════════════════
+let D = null;          // site data loaded from GitHub
+let indexSHA = '';     // current SHA of index.html on GitHub
+
+// ════════════════════════════════════
+// LOGIN
+// ════════════════════════════════════
+async function sha256(s){
+  const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+
+async function login(){
+  const pw=document.getElementById('pw').value;
+  if(!pw){document.getElementById('login-err').textContent='Enter password.';return;}
+  const hash=await sha256(pw);
+  const stored=localStorage.getItem('adm_pw_hash');
+  if(hash===stored||pw==='MDadmin2024'){
+    if(!stored)localStorage.setItem('adm_pw_hash',hash);
+    sessionStorage.setItem('adm_ok','1');
+    showShell();
+  }else{
+    document.getElementById('login-err').textContent='Wrong password. Default: MDadmin2024';
+  }
+}
+
+function showShell(){
+  document.getElementById('login-wrap').style.display='none';
+  document.getElementById('shell').classList.add('show');
+  loadGhSettings();
+  loadSiteData();
+}
+
+// Auto-login if session active
+window.addEventListener('DOMContentLoaded',()=>{
+  if(sessionStorage.getItem('adm_ok'))showShell();
+});
+
+// ════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════
+function nav(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('on'));
+  document.getElementById('pg-'+id).classList.add('on');
+  el.classList.add('on');
+}
+
+// ════════════════════════════════════
+// GITHUB HELPERS
+// ════════════════════════════════════
+const GH_API='https://api.github.com';
+
+function ghHeaders(){
+  return {
+    'Authorization':'token '+localStorage.getItem('gh_tok'),
+    'Accept':'application/vnd.github.v3+json',
+    'Content-Type':'application/json'
+  };
+}
+function ghUser(){return localStorage.getItem('gh_user')||'';}
+function ghRepo(){return localStorage.getItem('gh_repo')||'';}
+function ghBranch(){return localStorage.getItem('gh_branch')||'main';}
+
+function loadGhSettings(){
+  const u=ghUser(),r=ghRepo(),b=ghBranch(),t=localStorage.getItem('gh_tok');
+  setVal('gh-user',u);setVal('gh-repo',r);setVal('gh-branch',b||'main');
+  if(t)document.getElementById('gh-tok').value=t;
+  if(u&&r&&t)ghStatus('ok','Connected: '+u+'/'+r);
+}
+
+async function ghConnect(){
+  const u=getVal('gh-user'),r=getVal('gh-repo'),b=getVal('gh-branch')||'main',t=getVal('gh-tok');
+  if(!u||!r||!t){toast('Fill in all fields.','err');return;}
+  localStorage.setItem('gh_user',u);localStorage.setItem('gh_repo',r);
+  localStorage.setItem('gh_branch',b);localStorage.setItem('gh_tok',t);
+  ghStatus('idle','Testing...');
+  try{
+    const res=await fetch(`${GH_API}/repos/${u}/${r}`,{headers:ghHeaders()});
+    if(res.ok){
+      ghStatus('ok','Connected: '+u+'/'+r);
+      toast('Connected to GitHub!');
+      loadSiteData();
+    }else{
+      ghStatus('err','Error '+res.status+' — check details');
+    }
+  }catch(e){ghStatus('err','Network error');}
+}
+
+function ghStatus(type,msg){
+  const el=document.getElementById('gh-bar');if(!el)return;
+  el.className='gh-status '+type;
+  const icons={ok:'✓',err:'✗',idle:'…'};
+  el.innerHTML=`<strong>${icons[type]||'?'}</strong> ${msg}`;
+}
+
+// ════════════════════════════════════
+// LOAD SITE DATA FROM GITHUB
+// ════════════════════════════════════
+async function loadSiteData(){
+  if(!ghUser()||!ghRepo()||!localStorage.getItem('gh_tok')){
+    hideLoading();
+    nav('github',document.querySelector('[onclick*="github"]'));
+    return;
+  }
+  showLoading('Loading site content...');
+  try{
+    const res=await fetch(
+      `${GH_API}/repos/${ghUser()}/${ghRepo()}/contents/index.html?ref=${ghBranch()}`,
+      {headers:ghHeaders()}
+    );
+    if(!res.ok){
+      hideLoading();
+      nav('github',document.querySelector('[onclick*="github"]'));
+      ghStatus('err','Could not read index.html — check repo name');
+      return;
+    }
+    const file=await res.json();
+    indexSHA=file.sha;
+    const html=decodeURIComponent(escape(atob(file.content.replace(/\n/g,''))));
+    
+    // Extract SITE_DATA from the HTML
+    const m=html.match(/<script id="SITE_DATA" type="application\/json">([\s\S]*?)<\/script>/);
+    if(!m){hideLoading();toast('Could not find SITE_DATA in index.html — upload the new index.html first.','err');return;}
+    D=JSON.parse(m[1]);
+    
+    hideLoading();
+    populateFields();
+    renderBrands();
+    renderPhotos();
+    renderVideos();
+    renderSvcGrid();
+    document.getElementById('pub-btn').disabled=false;
+    ghStatus('ok','Connected: '+ghUser()+'/'+ghRepo());
+    // Show hero page
+    nav('hero',document.querySelector('[onclick*="hero"]'));
+  }catch(e){
+    hideLoading();
+    toast('Error loading: '+e.message,'err');
+  }
+}
+
+function showLoading(msg){
+  document.getElementById('loading-screen').style.display='flex';
+  document.getElementById('loading-screen').querySelector('span').textContent=msg||'Loading...';
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+}
+function hideLoading(){
+  document.getElementById('loading-screen').style.display='none';
+}
+
+// ════════════════════════════════════
+// POPULATE FIELDS
+// ════════════════════════════════════
+function setVal(id,v){const el=document.getElementById(id);if(el)el.value=v||'';}
+function getVal(id){const el=document.getElementById(id);return el?el.value:'';}
+
+function populateFields(){
+  if(!D)return;
+  const h=D.hero||{},a=D.about||{},q=D.quality||{},c=D.contact||{};
+  // Hero
+  setVal('h-h1a',h.h1a);setVal('h-h1b',h.h1b);setVal('h-lead',h.lead);
+  setVal('h-arh3',h.ar_h3);setVal('h-arp',h.ar_p);setVal('h-arguar',h.ar_guar);
+  setVal('h-wa',c.whatsapp);
+  // About
+  setVal('a-head',a.heading_en||'Who We Are');
+  setVal('a-en',a.en);setVal('a-ar',a.ar);setVal('a-arguar',a.ar_guar);
+  setVal('s1v',a.stat1v);setVal('s1l',a.stat1l);
+  setVal('s2v',a.stat2v);setVal('s2l',a.stat2l);
+  setVal('s3v',a.stat3v);setVal('s3l',a.stat3l);
+  // Quality
+  setVal('q-en',q.en);setVal('q-ar',q.ar);
+  // Contact
+  setVal('c-ph',c.phone);setVal('c-wa',c.whatsapp);setVal('c-em',c.email);
+  setVal('c-loc',c.location);setVal('c-map',c.maps);
+}
+
+// ════════════════════════════════════
+// SAVE (updates D in memory)
+// ════════════════════════════════════
+function save(section){
+  if(!D){toast('Load site data first.','err');return;}
+  if(section==='hero'){
+    D.hero.h1a=getVal('h-h1a');D.hero.h1b=getVal('h-h1b');D.hero.lead=getVal('h-lead');
+    D.hero.ar_h3=getVal('h-arh3');D.hero.ar_p=getVal('h-arp');D.hero.ar_guar=getVal('h-arguar');
+    D.contact.whatsapp=getVal('h-wa');
+  }else if(section==='about'){
+    D.about.heading_en=getVal('a-head');D.about.en=getVal('a-en');
+    D.about.ar=getVal('a-ar');D.about.ar_guar=getVal('a-arguar');
+    D.about.stat1v=getVal('s1v');D.about.stat1l=getVal('s1l');
+    D.about.stat2v=getVal('s2v');D.about.stat2l=getVal('s2l');
+    D.about.stat3v=getVal('s3v');D.about.stat3l=getVal('s3l');
+  }else if(section==='services'){
+    D.services.forEach((_,i)=>{
+      D.services[i].title=getVal('sv-t'+i);
+      D.services[i].desc=getVal('sv-d'+i);
+    });
+  }else if(section==='quality'){
+    D.quality.en=getVal('q-en');D.quality.ar=getVal('q-ar');
+  }else if(section==='contact'){
+    D.contact.phone=getVal('c-ph');D.contact.whatsapp=getVal('c-wa');
+    D.contact.email=getVal('c-em');D.contact.location=getVal('c-loc');D.contact.maps=getVal('c-map');
+  }
+  // photos and videos already live in D
+  toast('Saved! Click "Publish Live" to go live.');
+}
+
+// ════════════════════════════════════
+// SERVICES GRID
+// ════════════════════════════════════
+const ACCENTS=[
+  {label:'Blue',val:'var(--c-blue)',hex:'#3b86e0'},
+  {label:'Green',val:'var(--c-green)',hex:'#5aa730'},
+  {label:'Yellow',val:'var(--c-yellow)',hex:'#f4c12e'},
+  {label:'Orange',val:'var(--c-orange)',hex:'#e8682a'}
+];
+function renderSvcGrid(){
+  const g=document.getElementById('svc-grid');if(!g||!D)return;
+  g.innerHTML=(D.services||[]).map((s,i)=>`
+    <div class="svc-box">
+      <div class="svc-num">Service ${i+1}</div>
+      <div class="f"><label>Title</label><input id="sv-t${i}" type="text" value="${s.title}" oninput="D.services[${i}].title=this.value"></div>
+      <div class="f"><label>Description</label><textarea id="sv-d${i}" rows="2" oninput="D.services[${i}].desc=this.value">${s.desc}</textarea></div>
+      <div style="font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px">Accent Color</div>
+      <div class="cbox">${ACCENTS.map(a=>`<div class="cdot ${s.accent===a.val?'sel':''}" style="background:${a.hex}" title="${a.label}" onclick="setSvcAccent(${i},'${a.val}',this)"></div>`).join('')}</div>
+    </div>`).join('');
+}
+function setSvcAccent(i,v,el){
+  D.services[i].accent=v;
+  el.closest('.cbox').querySelectorAll('.cdot').forEach(d=>d.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+// ════════════════════════════════════
+// BRANDS
+// ════════════════════════════════════
+function renderBrands(){
+  const g=document.getElementById('brand-grid');if(!g||!D)return;
+  g.innerHTML=(D.brands||[]).map((b,i)=>`
+    <div class="bcard">
+      <img src="${b.img}" alt="${b.name}">
+      <div class="bname">${b.name}</div>
+      <div class="bact">
+        <label class="btn btn-ghost btn-sm" for="brep${i}" style="padding:3px 6px;cursor:pointer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </label>
+        <input type="file" id="brep${i}" accept="image/*" style="display:none" onchange="replaceBrand(${i},this)">
+        <button class="btn btn-danger btn-sm" style="padding:3px 6px" onclick="removeBrand(${i})">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>`).join('');
+}
+function addBrand(inp){
+  const f=inp.files[0];if(!f)return;
+  const name=prompt('Brand name:',f.name.replace(/\.[^.]+$/,''));if(!name)return;
+  const r=new FileReader();
+  r.onload=e=>{D.brands=D.brands||[];D.brands.push({name,img:e.target.result});renderBrands();};
+  r.readAsDataURL(f);inp.value='';
+}
+function replaceBrand(i,inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{D.brands[i].img=e.target.result;renderBrands();};
+  r.readAsDataURL(f);
+}
+function removeBrand(i){
+  if(!confirm('Remove "'+D.brands[i].name+'"?'))return;
+  D.brands.splice(i,1);renderBrands();
+}
+
+// ════════════════════════════════════
+// PHOTOS
+// ════════════════════════════════════
+function renderPhotos(){
+  const g=document.getElementById('photo-grid');if(!g||!D)return;
+  g.innerHTML=(D.gallery||[]).map((uri,i)=>`
+    <div class="mitem">
+      <img src="${uri}" alt="Photo ${i+1}">
+      <div class="mov">
+        <button class="btn btn-danger btn-sm" onclick="removePhoto(${i})">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          Remove
+        </button>
+      </div>
+    </div>`).join('')+`
+  <label class="madd" for="photo-inp">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    <span>Add Photos</span>
+  </label>
+  <input type="file" id="photo-inp" accept="image/*" multiple style="display:none" onchange="addPhotos(this)">`;
+}
+function addPhotos(inp){
+  const files=Array.from(inp.files);let done=0;
+  files.forEach(f=>{
+    const r=new FileReader();
+    r.onload=e=>{D.gallery=D.gallery||[];D.gallery.push(e.target.result);done++;if(done===files.length)renderPhotos();};
+    r.readAsDataURL(f);
+  });
+  inp.value='';
+}
+function removePhoto(i){D.gallery.splice(i,1);renderPhotos();}
+
+// ════════════════════════════════════
+// VIDEOS
+// ════════════════════════════════════
+function renderVideos(){
+  const g=document.getElementById('video-grid');if(!g||!D)return;
+  const vids=D.videos||[];
+  g.innerHTML=vids.map((v,i)=>`
+    <div class="mitem">
+      ${v.startsWith('data:video')
+        ? `<video src="${v}" style="width:100%;height:100%;object-fit:cover"></video>`
+        : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#0a1830;color:#fff;flex-direction:column;gap:6px;font-size:.75rem"><svg viewBox="0 0 24 24" fill="#f4a91f" width="28" height="28"><polygon points="5 3 19 12 5 21 5 3"/></svg>YouTube</div>`
+      }
+      <div class="mov">
+        <button class="btn btn-danger btn-sm" onclick="removeVideo(${i})">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          Remove
+        </button>
+      </div>
+    </div>`).join('')+`
+  <label class="madd" for="video-inp">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+    <span>Upload MP4</span>
+  </label>
+  <input type="file" id="video-inp" accept="video/mp4,video/*" multiple style="display:none" onchange="addVideos(this)">
+  <div class="madd" onclick="addYT()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/></svg>
+    <span>YouTube Link</span>
+  </div>`;
+}
+function addVideos(inp){
+  const files=Array.from(inp.files);let done=0;
+  files.forEach(f=>{
+    const r=new FileReader();
+    r.onload=e=>{D.videos=D.videos||[];D.videos.push(e.target.result);done++;if(done===files.length)renderVideos();};
+    r.readAsDataURL(f);
+  });
+  inp.value='';
+}
+function addYT(){
+  const url=prompt('Paste YouTube link:');
+  if(url&&url.includes('youtu')){D.videos=D.videos||[];D.videos.push(url.trim());renderVideos();}
+}
+function removeVideo(i){D.videos.splice(i,1);renderVideos();}
+
+// ════════════════════════════════════
+// PUBLISH — update index.html on GitHub
+// ════════════════════════════════════
+async function publish(){
+  if(!D){toast('No data loaded.','err');return;}
+  if(!ghUser()||!localStorage.getItem('gh_tok')){
+    nav('github',document.querySelector('[onclick*="github"]'));
+    toast('Set up GitHub first.','err');return;
+  }
+
+  const btn=document.getElementById('pub-btn');
+  const spin=document.getElementById('pub-spin');
+  const status=document.getElementById('pub-status');
+  btn.disabled=true;spin.classList.add('show');status.textContent='Fetching current file...';
+
+  try{
+    // 1. Get latest index.html from GitHub
+    const fileRes=await fetch(
+      `${GH_API}/repos/${ghUser()}/${ghRepo()}/contents/index.html?ref=${ghBranch()}`,
+      {headers:ghHeaders()}
+    );
+    if(!fileRes.ok)throw new Error('Could not fetch index.html: '+fileRes.status);
+    const fileData=await fileRes.json();
+    indexSHA=fileData.sha;
+    const currentHTML=decodeURIComponent(escape(atob(fileData.content.replace(/\n/g,''))));
+
+    status.textContent='Building updated file...';
+
+    // 2. Replace SITE_DATA block with updated D
+    const newJSON=JSON.stringify(D,null,0);
+    const updatedHTML=currentHTML.replace(
+      /(<script id="SITE_DATA" type="application\/json">)([\s\S]*?)(<\/script>)/,
+      `$1\n${newJSON}\n$3`
+    );
+
+    // 3. Push back to GitHub
+    status.textContent='Publishing to GitHub...';
+    const encoded=btoa(unescape(encodeURIComponent(updatedHTML)));
+    const pushRes=await fetch(
+      `${GH_API}/repos/${ghUser()}/${ghRepo()}/contents/index.html`,
+      {
+        method:'PUT',
+        headers:ghHeaders(),
+        body:JSON.stringify({
+          message:'Admin: update site content',
+          content:encoded,
+          sha:indexSHA,
+          branch:ghBranch()
+        })
+      }
+    );
+    if(!pushRes.ok){
+      const err=await pushRes.json();
+      throw new Error(err.message||'Push failed: '+pushRes.status);
+    }
+    const pushData=await pushRes.json();
+    indexSHA=pushData.content.sha;
+    status.textContent='Published ✓';
+    toast('✓ Live! Site updates in ~30 seconds.');
+  }catch(e){
+    status.textContent='Error';
+    toast('Error: '+e.message,'err');
+  }finally{
+    spin.classList.remove('show');
+    btn.disabled=false;
+    setTimeout(()=>{status.textContent='';},5000);
+  }
+}
+
+// ════════════════════════════════════
+// TOAST
+// ════════════════════════════════════
+function toast(msg,type='ok'){
+  const el=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  el.className='toast '+type+' show';
+  setTimeout(()=>el.classList.remove('show'),3200);
+}
+</script>
+</body>
+</html>
